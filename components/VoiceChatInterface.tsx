@@ -34,92 +34,185 @@ export default function VoiceChatInterface() {
   const currentAudioRef = useRef<HTMLAudioElement | null>(null)
 
   // Initialize WebSocket connection
-  const connectWebSocket = useCallback(() => {
-    setState((prev) => ({ ...prev, connectionStatus: "connecting" }))
+  // const connectWebSocket = useCallback(() => {
+  //   setState((prev) => ({ ...prev, connectionStatus: "connecting" }))
 
-    try {
-      // wsRef.current = new WebSocket("ws://localhost:3001")
-    wsRef.current = new WebSocket("ws://ai-voice-backend-production-ce85.up.railway.app");
+  //   try {
+  //     // wsRef.current = new WebSocket("ws://localhost:3001")
+  //   wsRef.current = new WebSocket("wss://ai-voice-backend-production-ce85.up.railway.app");
 
 
-      wsRef.current.onopen = () => {
-        setState((prev) => ({
-          ...prev,
-          isConnected: true,
-          connectionStatus: "connected",
-        }))
-        console.log("[v0] WebSocket connected successfully")
-      }
+  //     wsRef.current.onopen = () => {
+  //       setState((prev) => ({
+  //         ...prev,
+  //         isConnected: true,
+  //         connectionStatus: "connected",
+  //       }))
+  //       console.log("[v0] WebSocket connected successfully")
+  //     }
 
-      wsRef.current.onmessage = async (event) => {
-        try {
-          const data = JSON.parse(event.data)
-          console.log("[v0] Received message:", data.type)
+  //     wsRef.current.onmessage = async (event) => {
+  //       try {
+  //         const data = JSON.parse(event.data)
+  //         console.log("[v0] Received message:", data.type)
 
-          if (data.type === "audio_response") {
-            // Stop current AI audio if playing
-            if (currentAudioRef.current) {
-              currentAudioRef.current.pause()
-              currentAudioRef.current = null
-            }
+  //         if (data.type === "audio_response") {
+  //           // Stop current AI audio if playing
+  //           if (currentAudioRef.current) {
+  //             currentAudioRef.current.pause()
+  //             currentAudioRef.current = null
+  //           }
 
-            // Play AI response audio
-            const audioBlob = new Blob([new Uint8Array(data.audio)], { type: "audio/wav" })
-            const audioUrl = URL.createObjectURL(audioBlob)
-            const audio = new Audio(audioUrl)
-            currentAudioRef.current = audio
+  //           // Play AI response audio
+  //           const audioBlob = new Blob([new Uint8Array(data.audio)], { type: "audio/wav" })
+  //           const audioUrl = URL.createObjectURL(audioBlob)
+  //           const audio = new Audio(audioUrl)
+  //           currentAudioRef.current = audio
 
-            setState((prev) => ({ ...prev, isAITalking: true }))
+  //           setState((prev) => ({ ...prev, isAITalking: true }))
 
-            audio.onended = () => {
-              setState((prev) => ({ ...prev, isAITalking: false }))
-              URL.revokeObjectURL(audioUrl)
-              currentAudioRef.current = null
-            }
+  //           audio.onended = () => {
+  //             setState((prev) => ({ ...prev, isAITalking: false }))
+  //             URL.revokeObjectURL(audioUrl)
+  //             currentAudioRef.current = null
+  //           }
 
-            await audio.play()
-          } 
-          else if (data.type === "transcript") {
-            // Add message to chat
-            const newMessage: Message = {
-              id: Date.now().toString(),
-              type: data.speaker === "user" ? "user" : "ai",
-              content: data.text,
-              timestamp: new Date(),
-            }
+  //           await audio.play()
+  //         } 
+  //         else if (data.type === "transcript") {
+  //           // Add message to chat
+  //           const newMessage: Message = {
+  //             id: Date.now().toString(),
+  //             type: data.speaker === "user" ? "user" : "ai",
+  //             content: data.text,
+  //             timestamp: new Date(),
+  //           }
 
-            setState((prev) => ({
-              ...prev,
-              messages: [...prev.messages, newMessage],
-            }))
-          }
-        } catch (error) {
-          console.error("[v0] Error processing WebSocket message:", error)
-        }
-      }
+  //           setState((prev) => ({
+  //             ...prev,
+  //             messages: [...prev.messages, newMessage],
+  //           }))
+  //         }
+  //       } catch (error) {
+  //         console.error("[v0] Error processing WebSocket message:", error)
+  //       }
+  //     }
 
-      wsRef.current.onerror = (error) => {
-        console.error("[v0] WebSocket error:", error)
-        setState((prev) => ({
-          ...prev,
-          connectionStatus: "error",
-          isConnected: false,
-        }))
-      }
+  //     wsRef.current.onerror = (error) => {
+  //       console.error("[v0] WebSocket error:", error)
+  //       setState((prev) => ({
+  //         ...prev,
+  //         connectionStatus: "error",
+  //         isConnected: false,
+  //       }))
+  //     }
 
-      wsRef.current.onclose = () => {
-        setState((prev) => ({
-          ...prev,
-          isConnected: false,
-          connectionStatus: "disconnected",
-        }))
-        console.log("[v0] WebSocket disconnected")
-      }
-    } catch (error) {
-      console.error("[v0] Error creating WebSocket:", error)
-      setState((prev) => ({ ...prev, connectionStatus: "error" }))
+  //     wsRef.current.onclose = () => {
+  //       setState((prev) => ({
+  //         ...prev,
+  //         isConnected: false,
+  //         connectionStatus: "disconnected",
+  //       }))
+  //       console.log("[v0] WebSocket disconnected")
+  //     }
+  //   } catch (error) {
+  //     console.error("[v0] Error creating WebSocket:", error)
+  //     setState((prev) => ({ ...prev, connectionStatus: "error" }))
+  //   }
+  // }, [])
+
+
+  // Initialize WebSocket connection
+const connectWebSocket = useCallback(() => {
+  setState((prev) => ({ ...prev, connectionStatus: "connecting" }))
+
+  try {
+    // Decide backend URL based on environment
+    const backendUrl =
+      process.env.NODE_ENV === "production"
+        ? "wss://ai-voice-backend-production-ce85.up.railway.app"
+        : "ws://localhost:3001"
+
+    wsRef.current = new WebSocket(backendUrl)
+
+    wsRef.current.onopen = () => {
+      setState((prev) => ({
+        ...prev,
+        isConnected: true,
+        connectionStatus: "connected",
+      }))
+      console.log("[v0] WebSocket connected successfully:", backendUrl)
     }
-  }, [])
+
+    wsRef.current.onmessage = async (event) => {
+      try {
+        const data = JSON.parse(event.data)
+        console.log("[v0] Received message:", data.type)
+
+        if (data.type === "audio_response") {
+          // Stop current AI audio if playing
+          if (currentAudioRef.current) {
+            currentAudioRef.current.pause()
+            currentAudioRef.current = null
+          }
+
+          // Play AI response audio
+          const audioBlob = new Blob([new Uint8Array(data.audio)], { type: "audio/wav" })
+          const audioUrl = URL.createObjectURL(audioBlob)
+          const audio = new Audio(audioUrl)
+          currentAudioRef.current = audio
+
+          setState((prev) => ({ ...prev, isAITalking: true }))
+
+          audio.onended = () => {
+            setState((prev) => ({ ...prev, isAITalking: false }))
+            URL.revokeObjectURL(audioUrl)
+            currentAudioRef.current = null
+          }
+
+          await audio.play()
+        } else if (data.type === "transcript") {
+          // Add message to chat
+          const newMessage: Message = {
+            id: Date.now().toString(),
+            type: data.speaker === "user" ? "user" : "ai",
+            content: data.text,
+            timestamp: new Date(),
+          }
+
+          setState((prev) => ({
+            ...prev,
+            messages: [...prev.messages, newMessage],
+          }))
+        }
+      } catch (error) {
+        console.error("[v0] Error processing WebSocket message:", error)
+      }
+    }
+
+    wsRef.current.onerror = (error) => {
+      console.error("[v0] WebSocket error:", error)
+      setState((prev) => ({
+        ...prev,
+        connectionStatus: "error",
+        isConnected: false,
+      }))
+    }
+
+    wsRef.current.onclose = () => {
+      setState((prev) => ({
+        ...prev,
+        isConnected: false,
+        connectionStatus: "disconnected",
+      }))
+      console.log("[v0] WebSocket disconnected")
+    }
+  } catch (error) {
+    console.error("[v0] Error creating WebSocket:", error)
+    setState((prev) => ({ ...prev, connectionStatus: "error" }))
+  }
+}, [])
+
 
   // Initialize audio recording
   const initializeAudio = useCallback(async () => {
