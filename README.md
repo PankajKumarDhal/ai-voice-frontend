@@ -67,7 +67,7 @@ A professional voice chat AI application that replicates the functionality of Re
    npm start
    \`\`\`
 
-   Server will run on `http://localhost:3001`
+   Server will run on `https://ai-voice-backend-production-ce85.up.railway.app/`
 
 ### Frontend Setup
 

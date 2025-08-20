@@ -38,7 +38,7 @@ export default function VoiceChatInterface() {
     setState((prev) => ({ ...prev, connectionStatus: "connecting" }))
 
     try {
-      wsRef.current = new WebSocket("ws://localhost:3001")
+      wsRef.current = new WebSocket("ws://https://ai-voice-backend-production-ce85.up.railway.app/")
 
       wsRef.current.onopen = () => {
         setState((prev) => ({
