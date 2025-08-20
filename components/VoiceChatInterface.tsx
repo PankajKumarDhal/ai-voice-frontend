@@ -39,7 +39,7 @@ export default function VoiceChatInterface() {
 
     try {
       // wsRef.current = new WebSocket("ws://localhost:3001")
-    wsRef.current = new WebSocket("wss://ai-voice-backend-production-ce85.up.railway.app/");
+    wsRef.current = new WebSocket("ws://ai-voice-backend-production-ce85.up.railway.app/");
 
 
       wsRef.current.onopen = () => {
