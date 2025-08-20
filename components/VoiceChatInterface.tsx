@@ -39,7 +39,7 @@ export default function VoiceChatInterface() {
 
   //   try {
   //     // wsRef.current = new WebSocket("ws://localhost:3001")
-  //   wsRef.current = new WebSocket("wss://ai-voice-backend-production-ce85.up.railway.app");
+  //   wsRef.current = new WebSocket("ws://ai-voice-backend-production-ce85.up.railway.app");
 
 
   //     wsRef.current.onopen = () => {
@@ -127,11 +127,11 @@ const connectWebSocket = useCallback(() => {
   setState((prev) => ({ ...prev, connectionStatus: "connecting" }))
 
   try {
-    // Decide backend URL based on environment
+    // Pick URL based on where app is running
     const backendUrl =
-      process.env.NODE_ENV === "production"
-        ? "wss://ai-voice-backend-production-ce85.up.railway.app"
-        : "ws://localhost:3001"
+      window.location.hostname === "localhost"
+        ? "ws://localhost:3001"
+        : "wss://ai-voice-backend-production-ce85.up.railway.app"
 
     wsRef.current = new WebSocket(backendUrl)
 
@@ -150,13 +150,11 @@ const connectWebSocket = useCallback(() => {
         console.log("[v0] Received message:", data.type)
 
         if (data.type === "audio_response") {
-          // Stop current AI audio if playing
           if (currentAudioRef.current) {
             currentAudioRef.current.pause()
             currentAudioRef.current = null
           }
 
-          // Play AI response audio
           const audioBlob = new Blob([new Uint8Array(data.audio)], { type: "audio/wav" })
           const audioUrl = URL.createObjectURL(audioBlob)
           const audio = new Audio(audioUrl)
@@ -172,7 +170,6 @@ const connectWebSocket = useCallback(() => {
 
           await audio.play()
         } else if (data.type === "transcript") {
-          // Add message to chat
           const newMessage: Message = {
             id: Date.now().toString(),
             type: data.speaker === "user" ? "user" : "ai",
@@ -212,6 +209,7 @@ const connectWebSocket = useCallback(() => {
     setState((prev) => ({ ...prev, connectionStatus: "error" }))
   }
 }, [])
+
 
 
   // Initialize audio recording

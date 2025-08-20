@@ -1,11 +1,11 @@
 let socket;
 
 export function initWebSocket(onMessage, onOpen, onClose, onError) {
-  // Choose backend URL based on environment
+  // Choose backend URL based on current host
   const backendUrl =
-    process.env.NODE_ENV === "production"
-      ? "wss://ai-voice-backend-production-ce85.up.railway.app"
-      : "ws://localhost:3001";
+    typeof window !== "undefined" && window.location.hostname === "localhost"
+      ? "ws://localhost:3001"
+      : "wss://ai-voice-backend-production-ce85.up.railway.app";
 
   socket = new WebSocket(backendUrl);
 
