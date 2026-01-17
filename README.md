@@ -180,6 +180,7 @@ A professional voice chat AI application that replicates the functionality of Re
 ## Troubleshooting
 
 ### Common Issues
+Fixed the audio issue there is miner change
 
 1. **Microphone Access Denied**:
    - Check browser permissions
